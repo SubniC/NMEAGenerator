@@ -1,0 +1,22 @@
+#########################################
+# Syntax Coloring Map For NMEAGenerator
+#########################################
+
+#########################################
+# Datatypes (KEYWORD1)
+#########################################
+
+NMEAGenerator	KEYWORD1
+
+#########################################
+# Methods and Functions (KEYWORD2)
+#########################################
+
+begin	KEYWORD2
+append	KEYWORD2
+appendEmpty	KEYWORD2
+getSentence	KEYWORD2
+print	KEYWORD2
+isReady	KEYWORD2
+currentField	KEYWORD2
+clear	KEYWORD2

@@ -13,12 +13,10 @@
 
 #define MAX_NMEA_SENTENCE_LENGTH 128
 
-//TODO Limita rel tamaño al maximo de las tramas NMEA (creoq ue 82)
-//Messages have a maximum length of 82 characters, including the $ or ! starting character and the ending <LF>
-//https://en.wikipedia.org/wiki/NMEA_0183#Message_structure
-//Esto es lo maximo
-//$PSBWQS,53,4.92382,0.77598,0.77598,0.77598,0.77598,0.778,0.77598,0.7798,0.77*3C\r\n
-//Termina con \r\n
+// NMEA 0183 messages have a maximum length of 82 characters, including the
+// leading '$' (or '!') and the trailing <CR><LF>. See:
+// https://en.wikipedia.org/wiki/NMEA_0183#Message_structure
+// Example: $PSBWQS,53,4.92382,0.77598,0.77598,0.77598,0.778,0.77598,0.77*3C\r\n
 
 class NMEAGenerator
 {
@@ -26,11 +24,11 @@ public:
 	NMEAGenerator();
 	NMEAGenerator(char, char*, char);
 	NMEAGenerator(char, char*, char, uint8_t);
-	void getSentence(char*, bool = true); //Obtiene la trama y limpia para la siguiente
-	void print(Stream&, bool = false); //Imprime la trama en el Stream pasado como parametro
-	void begin(char, char*, char, uint8_t); //Fija nuevvos parametros para la trama y reinicia
-	bool isReady(void); //Indica si ya tenemos una sentencia completa que devolver
-	uint8_t currentField(); //Indica que campo de la trama es el ultimo que se añadio
+	void getSentence(char*, bool = true); // Copy the sentence to a buffer; optionally append CRC and reset
+	void print(Stream&, bool = false);    // Print the sentence to the given Stream
+	void begin(char, char*, char, uint8_t); // Set new sentence parameters and reset
+	bool isReady(void);                   // True when all expected fields have been appended
+	uint8_t currentField();               // Index of the last appended field
 	void appendEmpty(void);
 	void append(const String &);
 	void append(const char *);
@@ -45,15 +43,13 @@ public:
 	void clear(void);
 private:
 	String* _sentence;
-	String* _tmpstr;
 	char* _header;
 	char _initChar;
 	char _endChar;
 	uint8_t _fieldCount;
 	uint8_t _currentField;
-	void _resetState(); //Reinicia el estado del objeto
+	void _resetState(); // Reset the object to start a new sentence
 	int _generateCRC();
 };
 
 #endif
-

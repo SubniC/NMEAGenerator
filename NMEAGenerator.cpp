@@ -1,12 +1,10 @@
-// 
-// 
-// 
+// NMEAGenerator.cpp
 
 #include "NMEAGenerator.h"
 
-
-
 NMEAGenerator::NMEAGenerator()
+	: _sentence(nullptr), _header(nullptr), _initChar(0), _endChar(0),
+	  _fieldCount(0), _currentField(0)
 {
 }
 
@@ -27,7 +25,7 @@ void NMEAGenerator::begin(char initChar, char* header, char endChar, uint8_t fie
 	_initChar = initChar;
 	_endChar = endChar;
 	_currentField = 0;
-	//Inicializamos la cadena
+	// Initialise the sentence with the start char and header
 	_sentence = new String(initChar);
 	_sentence->reserve(MAX_NMEA_SENTENCE_LENGTH);
 	_sentence->concat(header);
@@ -40,21 +38,16 @@ void NMEAGenerator::clear()
 
 void NMEAGenerator::getSentence(char* buffer, bool reset)
 {
-	char crchex[2] = { 0 };
+	char crchex[3] = { 0 };
 
 	_sentence->concat(_endChar);
 
 	if (reset)
 	{
 		int _crc = _generateCRC();
-		//if (_crc < 0x10)
-		//{
-		//	_sentence->concat('0');
-		//}
 		sprintf(crchex, "%02X", _crc);
 		_sentence->concat(crchex);
 	}
-
 
 	_sentence->toCharArray(buffer, MAX_NMEA_SENTENCE_LENGTH);
 
@@ -64,29 +57,22 @@ void NMEAGenerator::getSentence(char* buffer, bool reset)
 
 void NMEAGenerator::print(Stream& out_stream, bool reset)
 {
-	char crchex[2] = { 0 };
+	char crchex[3] = { 0 };
 
 	if (reset)
 	{
 		_sentence->concat(_endChar);
 
-
 		int _crc = _generateCRC();
 		sprintf(crchex, "%02X", _crc);
 		_sentence->concat(crchex);
-		//if (_crc < 0x10)
-		//{
-		//	_sentence += '0';
-		//}
-		//*_sentence += String(_crc, HEX);
 	}
 
-	out_stream.printf("%s", _sentence);
+	out_stream.print(*_sentence);
 
 	if (reset)
 		_resetState();
 }
-
 
 bool NMEAGenerator::isReady()
 {
@@ -95,7 +81,7 @@ bool NMEAGenerator::isReady()
 
 void NMEAGenerator::_resetState()
 {
-	free(_sentence);
+	delete _sentence;
 	_sentence = new String(_initChar);
 	_sentence->concat(_header);
 	_currentField = 0;
@@ -110,10 +96,8 @@ int NMEAGenerator::_generateCRC()
 {
 	int crc = 0;
 	uint_fast8_t i;
-	//Serial.print(_sentence.substring(1, _sentence.length() - 1));
-	// the first $ sign and the last two bytes of original CRC + the * sign
+	// XOR every byte between the leading '$' and the trailing end char
 	for (i = 1; i < _sentence->length() - 1; i++) {
-		//Serial.println(_sentence[i]);
 		crc ^= (*_sentence)[i];
 	}
 	return crc;
